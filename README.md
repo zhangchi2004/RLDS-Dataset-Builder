@@ -1,9 +1,9 @@
 # RLDS Dataset Conversion
 
-> Zhang Chi <zhang.holomorphic@gmail.com>
+> Chi Zhang <zhang.holomorphic@gmail.com>
 
 This repo demonstrates how to convert an existing dataset into RLDS format for X-embodiment experiment integration.
-It is forked from [this repo](https://github.com/kpertsch/rlds_dataset_builder), and specially adapted for our hdf5 formatted LIBERO datasets.
+It is forked from [this repo](https://github.com/kpertsch/rlds_dataset_builder), and specially adapted for our hdf5 formatted rolled-out LIBERO datasets.
 
 ## Installation
 
@@ -23,13 +23,13 @@ If you want to manually create an environment, the key packages to install are `
 
 ## Converting LIBERO from HDF5 to RLDS
 
-Now we can modify the provided example to convert your own data. Follow the steps below:
+To convert your rolled-out LIBERO dataset, follow the steps below:
 
-1. **Rename Dataset**: Change the class name in `example_dataset_dataset_builder.py` (Currently `LiberoBowl` to the name of your dataset, using camel case instead of underlines.
+1. **Rename Dataset**: Change the class name in `example_dataset_dataset_builder.py` (Currently `LiberoBowl`) to the name of your dataset, using camel case instead of underlines.
 
 2. **Select Source Path**: Modify the `SRC_PATH` global variable in `example_dataset_dataset_builder.py` to the path where the .hdf5 files are stored.
 
-3. **Modify Dataset Splits** (if needed in future): The function `_split_generator()` determines the splits of the generated dataset (e.g. training, validation etc.). If we are splitting the train/val sets, add another path for the `'val'` subset.
+3. **Modify Dataset Splits** (if needed in future): The function `_split_generator()` determines the splits of the generated dataset (e.g. training, validation etc.). If you are splitting the train/val sets, add another path for the `'val'` subset.
 
 Inside the dataset directory `example_dataset`, run:
 ```
