@@ -90,15 +90,16 @@ class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to 
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Define data splits."""
         return {
-            'train': self._generate_examples(path=[
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_alphabet_soup_in_the_basket_demo.hdf5',
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_butter_in_the_basket_demo.hdf5',
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_cream_cheese_in_the_basket_demo.hdf5',
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_ketchup_in_the_basket_demo.hdf5',
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_orange_juice_in_the_basket_demo.hdf5',
-                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_tomato_sauce_in_the_basket_demo.hdf5',
-            ]),
-            'val': self._generate_examples(path=f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_milk_in_the_basket_demo.hdf5'),  # Modify this if you have a separate validation set
+            'train': self._generate_examples(path=f'{SRC_PATH}/*.hdf5'),
+            #                                  [
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_alphabet_soup_in_the_basket_demo.hdf5',
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_butter_in_the_basket_demo.hdf5',
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_cream_cheese_in_the_basket_demo.hdf5',
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_ketchup_in_the_basket_demo.hdf5',
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_orange_juice_in_the_basket_demo.hdf5',
+            #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_tomato_sauce_in_the_basket_demo.hdf5',
+            # ]),
+            # 'val': self._generate_examples(path=f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_milk_in_the_basket_demo.hdf5'),  # Modify this if you have a separate validation set
         }
 
     def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
