@@ -9,7 +9,7 @@ import tensorflow_hub as hub
 import h5py
 
 # By zc
-SRC_PATH = '/home2/czhang/pick_place_data/' # Modify this path to your dataset location
+SRC_PATH = '/home/projects/xlang.slurm/czhang/' # Modify this path to your dataset location
 
 class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to your dataset name
     """DatasetBuilder for example dataset."""
