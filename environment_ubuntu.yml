@@ -2,7 +2,7 @@ name: rlds_env
 channels:
   - defaults
 dependencies:
-  - _libgcc_mutex=0.1=conda_forge
+  - _libgcc_mutex=0.1
   - _openmp_mutex=4.5=2_gnu
   - ca-certificates=2023.7.22=hbcca054_0
   - ld_impl_linux-64=2.40=h41732ed_0
