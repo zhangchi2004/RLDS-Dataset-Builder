@@ -9,9 +9,9 @@ import tensorflow_hub as hub
 import h5py
 
 # By zc
-SRC_PATH = '/home2/czhang/datasets/LIBERO/libero_bowl/' # Modify this path to your dataset location
+SRC_PATH = '/home2/czhang/pick_place_data/' # Modify this path to your dataset location
 
-class LiberoBowl(tfds.core.GeneratorBasedBuilder): # Modify the class name to your dataset name
+class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to your dataset name
     """DatasetBuilder for example dataset."""
 
     VERSION = tfds.core.Version('1.0.0')
@@ -90,13 +90,25 @@ class LiberoBowl(tfds.core.GeneratorBasedBuilder): # Modify the class name to yo
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Define data splits."""
         return {
-            'train': self._generate_examples(path=f'{SRC_PATH}/*.hdf5'),
-            # 'val': self._generate_examples(path=f'{SRC_PATH}/*.hdf5'),  # Modify this if you have a separate validation set
+            'train': self._generate_examples(path=[
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_alphabet_soup_in_the_basket_demo.hdf5',
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_butter_in_the_basket_demo.hdf5',
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_cream_cheese_in_the_basket_demo.hdf5',
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_ketchup_in_the_basket_demo.hdf5',
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_orange_juice_in_the_basket_demo.hdf5',
+                f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_tomato_sauce_in_the_basket_demo.hdf5',
+            ]),
+            'val': self._generate_examples(path=f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_milk_in_the_basket_demo.hdf5'),  # Modify this if you have a separate validation set
         }
 
     def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
         """Generator of examples for each split."""
-        episode_paths = glob.glob(path)
+        if isinstance(path, str):
+            episode_paths = glob.glob(path)
+        elif isinstance(path, list):
+            episode_paths = path
+        else:
+            raise ValueError("Path must be a string or a list of strings.")
         for episode_path in episode_paths:
             with h5py.File(episode_path, 'r') as f:
                 all_data = f['data']
