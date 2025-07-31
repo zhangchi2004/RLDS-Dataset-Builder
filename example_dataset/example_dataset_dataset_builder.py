@@ -110,6 +110,13 @@ class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to 
             episode_paths = path
         else:
             raise ValueError("Path must be a string or a list of strings.")
+        if len(episode_paths) == 0:
+            yield "Empty", {
+                'steps': [],
+                'episode_metadata': {
+                    'file_path': 'No data found at the specified path.'
+                }
+            }
         for episode_path in episode_paths:
             with h5py.File(episode_path, 'r') as f:
                 all_data = f['data']
