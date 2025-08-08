@@ -54,6 +54,7 @@ class Viola(tfds.core.GeneratorBasedBuilder):
                 sample_data = pickle.load(f)
             self._feature_structure = self._infer_feature(sample_data)
         
+        print("Feature structure inferred:", self._feature_structure)
         return self.dataset_info_from_configs(
             features=self._feature_structure
         )
