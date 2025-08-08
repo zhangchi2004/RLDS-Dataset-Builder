@@ -15,6 +15,7 @@ class Viola(tfds.core.GeneratorBasedBuilder):
     }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        print("Initializing Viola dataset builder...")
         self._feature_structure = None
 
     def _infer_feature(self, value: Any) -> Any:
