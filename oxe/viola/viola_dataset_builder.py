@@ -6,7 +6,7 @@ import pickle
 
 SRC_PATH = "/home/projects/xlang.slurm/czhang/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
 
-class DynamicDataset(tfds.core.GeneratorBasedBuilder):
+class Viola(tfds.core.GeneratorBasedBuilder):
     VERSION = tfds.core.Version("1.0.0")
     def _info(self) -> tfds.core.DatasetInfo:
         return self.dataset_info_from_configs(
