@@ -4,7 +4,7 @@ from typing import Iterator, Dict, Any, Tuple
 import glob
 import pickle
 
-SRC_PATH = "~/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
+SRC_PATH = "/home/projects/xlang.slurm/czhang/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
 
 class DynamicDataset(tfds.core.GeneratorBasedBuilder):
     VERSION = tfds.core.Version("1.0.0")
