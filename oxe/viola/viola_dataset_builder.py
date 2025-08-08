@@ -19,6 +19,7 @@ class Viola(tfds.core.GeneratorBasedBuilder):
         self._feature_structure = None
 
     def _infer_feature(self, value: Any) -> Any:
+        import pdb; pdb.set_trace()  # Debugging line to inspect value
         """Infers TFDS feature type from Python value with strict typing"""
         if isinstance(value, np.ndarray):
             return tfds.features.Tensor(shape=value.shape, dtype=value.dtype)
