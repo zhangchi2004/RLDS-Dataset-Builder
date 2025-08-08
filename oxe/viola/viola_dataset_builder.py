@@ -19,7 +19,7 @@ class Viola(tfds.core.GeneratorBasedBuilder):
         self._feature_structure = None
 
     def _infer_feature(self, value: Any) -> Any:
-        import pdb; pdb.set_trace()  # Debugging line to inspect value
+        # import pdb; pdb.set_trace()  # Debugging line to inspect value
         """Infers TFDS feature type from Python value with strict typing"""
         if isinstance(value, np.ndarray):
             return tfds.features.Tensor(shape=value.shape, dtype=value.dtype)
@@ -72,5 +72,5 @@ class Viola(tfds.core.GeneratorBasedBuilder):
         for step_idx, pickle_file in enumerate(pickle_files):
             with open(pickle_file, "rb") as f:
                 data = pickle.load(f)
-            import pdb; pdb.set_trace()  # Debugging line to inspect data
+            # import pdb; pdb.set_trace()  # Debugging line to inspect data
             yield str(step_idx), data
