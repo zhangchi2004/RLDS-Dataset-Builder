@@ -43,6 +43,7 @@ class Viola(tfds.core.GeneratorBasedBuilder):
 
     def _info(self) -> tfds.core.DatasetInfo:
         """Strictly mirrors pickle structure with no added fields"""
+        self._feature_structure = None
         if self._feature_structure is None:
             # Find first pickle to infer structure
             pickle_files = glob.glob(f"{SRC_PATH}/*.pickle")
