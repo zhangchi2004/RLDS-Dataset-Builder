@@ -9,7 +9,10 @@ import tensorflow_hub as hub
 import h5py
 
 # By zc
-SRC_PATH = '/home/projects/xlang.slurm/' # Modify this path to your dataset location
+
+SRC_PATH = '/home2/czhang/datasets/LIBERO/libero_basket' # Modify this path to your dataset location
+
+    
 
 class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to your dataset name
     """DatasetBuilder for example dataset."""
@@ -104,6 +107,7 @@ class LiberoBasket(tfds.core.GeneratorBasedBuilder): # Modify the class name to 
 
     def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
         """Generator of examples for each split."""
+        print(path)
         if isinstance(path, str):
             episode_paths = glob.glob(path)
         elif isinstance(path, list):
