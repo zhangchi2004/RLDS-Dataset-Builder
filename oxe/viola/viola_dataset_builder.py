@@ -27,8 +27,10 @@ class Viola(tfds.core.GeneratorBasedBuilder):
         elif isinstance(value, (float, np.floating)):
             return tfds.features.Scalar(dtype=type(value))
         elif isinstance(value, bool):
+            print(value, "is bool")
             return tfds.features.Scalar(dtype=np.bool_)
         elif isinstance(value, str):
+            print(value, "is str")
             return tfds.features.Text()
         elif isinstance(value, dict):
             return tfds.features.FeaturesDict({
