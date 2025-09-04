@@ -99,7 +99,8 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Define data splits."""
         return {
-            'train': self._generate_examples(path=f'/home/czhang/ManiSkill/demos/03b2d88d-92b0-41f5-9754-812354706d80/motionplanning/20250825_210021.h5'),
+            # 'train': self._generate_examples(path=f'/home/czhang/ManiSkill/demos/03b2d88d-92b0-41f5-9754-812354706d80/motionplanning/20250825_210021.h5'),
+            'train': self._generate_examples(path=f'/home/projects/xlang.slurm/czhang/20250825_210021.h5'),
             #                                  [
             #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_alphabet_soup_in_the_basket_demo.hdf5',
             #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_butter_in_the_basket_demo.hdf5',
