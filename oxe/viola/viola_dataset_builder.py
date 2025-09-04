@@ -5,7 +5,15 @@ import glob
 import pickle
 import numpy as np
 
-SRC_PATH = "/home/projects/xlang.slurm/czhang/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
+# Find the env variable MACHINE_NAME
+MACHINE_NAME = os.getenv("MACHINE_NAME", "default_machine")
+if "klb-login" in MACHINE_NAME:
+    SRC_PATH = "/home/projects/xlang.slurm/czhang/data/OXE/viola"  # H800 Machine
+elif "tyu-g1" in MACHINE_NAME:
+    SRC_PATH = "/home2/czhang/datasets/viola" # A6000 Machine
+else:
+    raise ValueError(f"Unknown machine name: {MACHINE_NAME}. Please set the MACHINE_NAME environment variable correctly.")
+
 
 class Viola(tfds.core.GeneratorBasedBuilder):
 
@@ -73,4 +81,5 @@ class Viola(tfds.core.GeneratorBasedBuilder):
             with open(pickle_file, "rb") as f:
                 data = pickle.load(f)
             # import pdb; pdb.set_trace()  # Debugging line to inspect data
+            import pdb; pdb.set_trace()  # Debugging line to inspect data
             yield str(step_idx), data

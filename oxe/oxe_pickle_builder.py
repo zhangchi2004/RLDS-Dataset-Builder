@@ -5,7 +5,8 @@ import glob
 import pickle
 
 
-SRC_PATH = "~/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
+# SRC_PATH = "~/data/OXE/viola"  # Parent dir containing subdirs (each subdir = dataset)
+SRC_PATH = "/home2/czhang/datasets/viola"
 
 class DynamicDataset(tfds.core.GeneratorBasedBuilder):
     VERSION = tfds.core.Version("1.0.0")
