@@ -1,12 +1,17 @@
 from typing import Iterator, Tuple, Any
 
 import glob
+import os
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_hub as hub
 
 import h5py
+try:
+    import apache_beam as beam
+except ImportError:
+    beam = None
 
 # By zc
 
@@ -112,15 +117,48 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
             # 'val': self._generate_examples(path=f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_milk_in_the_basket_demo.hdf5'),  # Modify this if you have a separate validation set
         }
 
-    def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
-        """Generator of examples for each split."""
-        print(path)
+    def _discover_h5_files(self, path):
+        """Discover all H5/HDF5 files from path (supports directories, globs, and file lists)."""
+        episode_paths = []
+        
         if isinstance(path, str):
-            episode_paths = glob.glob(path)
+            # Check if it's a single file
+            if os.path.isfile(path) and path.lower().endswith(('.h5', '.hdf5')):
+                episode_paths = [path]
+            # Check if it's a directory - scan recursively
+            elif os.path.isdir(path):
+                print(f"Scanning directory recursively: {path}")
+                for root, dirs, files in os.walk(path):
+                    for file in files:
+                        if file.lower().endswith(('.h5', '.hdf5')):
+                            full_path = os.path.join(root, file)
+                            episode_paths.append(full_path)
+                print(f"Found {len(episode_paths)} H5 files")
+            # Otherwise treat as glob pattern
+            else:
+                episode_paths = glob.glob(path)
+                # Also try recursive glob patterns
+                if len(episode_paths) == 0 and '**' not in path:
+                    # Try adding recursive pattern
+                    recursive_path = os.path.join(path, '**', '*.h5')
+                    episode_paths.extend(glob.glob(recursive_path, recursive=True))
+                    recursive_path = os.path.join(path, '**', '*.hdf5') 
+                    episode_paths.extend(glob.glob(recursive_path, recursive=True))
         elif isinstance(path, list):
             episode_paths = path
         else:
-            raise ValueError("Path must be a string or a list of strings.")
+            raise ValueError("Path must be a string (file/directory/glob) or a list of strings.")
+        
+        # Remove duplicates and sort
+        episode_paths = sorted(list(set(episode_paths)))
+        print(f"Total H5 files to process: {len(episode_paths)}")
+        return episode_paths
+
+    def _generate_examples(self, path):
+        """Generator of examples for each split."""
+        print(path)
+        episode_paths = self._discover_h5_files(path)
+        
         if len(episode_paths) == 0:
             yield "Empty", {
                 'steps': [],
@@ -128,7 +166,27 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
                     'file_path': 'No data found at the specified path.'
                 }
             }
+            return
+        
+        # Check if running with Beam (multiprocessing)
+        if beam is not None:
+            try:
+                # Return Beam pipeline for parallel processing
+                return (
+                    beam.Create(episode_paths)
+                    | 'ProcessFiles' >> beam.FlatMap(self._process_single_file)
+                )
+            except Exception:
+                # Fall back to sequential processing if Beam fails
+                pass
+        
+        # Sequential processing (fallback or when Beam not available)
         for episode_path in episode_paths:
+            yield from self._process_single_file(episode_path)
+    
+    def _process_single_file(self, episode_path):
+        """Process a single HDF5 file and yield all episodes."""
+        try:
             with h5py.File(episode_path, 'r') as f:
                 all_data = f
                 # Extract language instruction from file-level attributes
@@ -186,3 +244,6 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
                         }
                     }
                     yield example_id, sample
+        except Exception as e:
+            print(f"Error processing {episode_path}: {e}")
+            return
