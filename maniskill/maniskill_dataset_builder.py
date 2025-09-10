@@ -17,7 +17,7 @@ except ImportError:
 
 SRC_PATH = '/home2/czhang/datasets/Maniskill' # Modify this path to your dataset location
 
-    
+# cmd (cjh): CUDA_VISIBLE_DEVICES="" tfds build --overwrite --beam_pipeline_options="direct_running_mode=multi_processing,direct_num_workers=4" --data_dir=/home2/jhchen/RLDS-Dataset-Builder/maniskill/data
 
 class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to your dataset name
     """DatasetBuilder for example dataset."""
@@ -105,7 +105,7 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
         """Define data splits."""
         return {
             # 'train': self._generate_examples(path=f'/home/czhang/ManiSkill/demos/03b2d88d-92b0-41f5-9754-812354706d80/motionplanning/20250825_210021.h5'),
-            'train': self._generate_examples(path=f'/home/projects/xlang.slurm/czhang/20250825_210021.h5'),
+            'train': self._generate_examples(path=f'/home2/jhchen/RLDS-Dataset-Builder/maniskill/raw_data'),
             #                                  [
             #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_alphabet_soup_in_the_basket_demo.hdf5',
             #     f'{SRC_PATH}/LIVING_ROOM_SCENE2_place_the_butter_in_the_basket_demo.hdf5',
@@ -160,90 +160,87 @@ class Maniskill(tfds.core.GeneratorBasedBuilder): # Modify the class name to you
         episode_paths = self._discover_h5_files(path)
         
         if len(episode_paths) == 0:
-            yield "Empty", {
-                'steps': [],
-                'episode_metadata': {
-                    'file_path': 'No data found at the specified path.'
-                }
-            }
             return
         
-        # Check if running with Beam (multiprocessing)
-        if beam is not None:
+        # # Always use sequential processing - tfds will handle beam automatically
+        # for episode_path in episode_paths:
+        #     yield from self._process_single_file(episode_path)
+        
+        def _process_single_file(episode_path):
+            """Process a single HDF5 file and yield all episodes."""
+            print(f"Processing file: {episode_path}")
             try:
-                # Return Beam pipeline for parallel processing
-                return (
-                    beam.Create(episode_paths)
-                    | 'ProcessFiles' >> beam.FlatMap(self._process_single_file)
-                )
-            except Exception:
-                # Fall back to sequential processing if Beam fails
-                pass
-        
-        # Sequential processing (fallback or when Beam not available)
-        for episode_path in episode_paths:
-            yield from self._process_single_file(episode_path)
-    
-    def _process_single_file(self, episode_path):
-        """Process a single HDF5 file and yield all episodes."""
-        try:
-            with h5py.File(episode_path, 'r') as f:
-                all_data = f
-                # Extract language instruction from file-level attributes
-                language_instruction = "empty language instruction"
-                
-                # Process each demonstration in the file
-                for demo_key in all_data.keys():
-                    data = all_data[demo_key]
-                    episode = []
-                    num_steps = len(data['actions'])
+                with h5py.File(episode_path, 'r') as f:
+                    all_data = f
+                    # Extract language instruction from file-level attributes
+                    language_instruction = "empty language instruction"
                     
-                    for i in range(num_steps):
-                        action = data['actions'][i]
-                        done = data['terminated'][i] | data['truncated'][i]
-                        obs_group = data['obs']
-                        left_camera = obs_group['sensor_data']['left_camera']['rgb'][i]
-                        right_camera = obs_group['sensor_data']['right_camera']['rgb'][i]
-                        hand_camera = obs_group['sensor_data']['hand_camera']['rgb'][i]
+                    # Process each demonstration in the file
+                    for demo_key in all_data.keys():
+                        print(f"  Processing demo: {demo_key}")
+                        data = all_data[demo_key]
+                        episode = []
+                        num_steps = len(data['actions'])
+                        print(f"    Steps: {num_steps}")
+                        
+                        for i in range(num_steps):
+                            action = data['actions'][i]
+                            done = data['terminated'][i] | data['truncated'][i]
+                            obs_group = data['obs']
+                            left_camera = obs_group['sensor_data']['left_camera']['rgb'][i]
+                            right_camera = obs_group['sensor_data']['right_camera']['rgb'][i]
+                            hand_camera = obs_group['sensor_data']['hand_camera']['rgb'][i]
 
-                        joint_state = obs_group['agent']['qpos'][i, :7]
-                        gripper_state = obs_group['agent']['qpos'][i, 7:]
+                            joint_state = obs_group['agent']['qpos'][i, :7]
+                            gripper_state = obs_group['agent']['qpos'][i, 7:]
+                            
+                            # Convert and process data
+                            action = np.asarray(action, dtype=np.float32)
+                            done = bool(done)
+                            left_camera = np.asarray(left_camera, dtype=np.uint8)
+                            right_camera = np.asarray(right_camera, dtype=np.uint8)
+                            hand_camera = np.asarray(hand_camera, dtype=np.uint8)
+                            joint_state = np.asarray(joint_state, dtype=np.float32)
+                            gripper_state = np.asarray(gripper_state, dtype=np.float32)
+                            
+                            episode.append({
+                                'action': action,
+                                'is_terminal': done,
+                                'is_last': done,
+                                'language_instruction': language_instruction,
+                                'observation': {
+                                    'left_camera': left_camera,
+                                    'right_camera': right_camera,
+                                    'hand_camera': hand_camera,
+                                    'joint_state': joint_state,
+                                    'gripper_state': gripper_state,
+                                },
+                                'is_first': i == 0,
+                                'discount': 1.0,
+                                'reward': 1.0 if done else 0.0,
+                            })
                         
-                        # Convert and process data
-                        action = np.asarray(action, dtype=np.float32)
-                        done = bool(done)
-                        left_camera = np.asarray(left_camera, dtype=np.uint8)
-                        right_camera = np.asarray(right_camera, dtype=np.uint8)
-                        hand_camera = np.asarray(hand_camera, dtype=np.uint8)
-                        joint_state = np.asarray(joint_state, dtype=np.float32)
-                        gripper_state = np.asarray(gripper_state, dtype=np.float32)
-                        
-                        episode.append({
-                            'action': action,
-                            'is_terminal': done,
-                            'is_last': done,
-                            'language_instruction': language_instruction,
-                            'observation': {
-                                'left_camera': left_camera,
-                                'right_camera': right_camera,
-                                'hand_camera': hand_camera,
-                                'joint_state': joint_state,
-                                'gripper_state': gripper_state,
-                            },
-                            'is_first': i == 0,
-                            'discount': 1.0,
-                            'reward': 1.0 if done else 0.0,
-                        })
-                    
-                    # Create unique ID for each demonstration
-                    example_id = f"{episode_path}_{demo_key}"
-                    sample = {
-                        'steps': episode,
-                        'episode_metadata': {
-                            'file_path': episode_path
+                        # Create unique ID for each demonstration
+                        example_id = f"{episode_path}_{demo_key}"
+                        sample = {
+                            'steps': episode,
+                            'episode_metadata': {
+                                'file_path': episode_path
+                            }
                         }
-                    }
-                    yield example_id, sample
-        except Exception as e:
-            print(f"Error processing {episode_path}: {e}")
-            return
+                        print(f"    Yielding example: {example_id}")
+                        yield example_id, sample
+            except Exception as e:
+                print(f"Error processing {episode_path}: {e}")
+                return
+            
+        # beam = tfds.core.lazy_imports.apache_beam
+        return (
+                beam.Create(episode_paths)
+                | beam.FlatMap(_process_single_file)
+        )
+
+        # Always use sequential processing - tfds will handle beam automatically
+        # for episode_path in episode_paths:
+        #     yield from _process_single_file(episode_path)
+    
